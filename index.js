@@ -62,6 +62,13 @@ async function run() {
             console.log(result)
             res.send(result)
     })
+    // Create a partner API 
+
+    app.post('/allpartners', async(req, res)=>{
+        const data =req.body
+        const result = partners.insertOne(data)
+        res.send(result)
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log(
