@@ -117,6 +117,18 @@ async function run() {
       }
     });
 
+    // Delete API 
+    app.delete("/requests/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) }
+      try {
+        const result = await requests.deleteOne(query);
+        res.send(result);
+      } catch (err) {
+        res.status(500).send({ message: "Error deleting request" });
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
