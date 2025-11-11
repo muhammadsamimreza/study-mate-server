@@ -72,12 +72,12 @@ async function run() {
 
     // Create a PUT API for increment count Number
 
-    app.put("/partnerRequest/:id", async (req, res) => {
+    app.put("/requests/:id", async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
       const increment = { $inc: { partnerCount: 1 } };
       try {
-        const result = await partners.insertOne(query, increment);
+        const result = await partners.updateOne(query, increment);
         res.send(result);
       } catch (error) {
         console.error(error);
@@ -94,9 +94,9 @@ async function run() {
           senderEmail: reqData.senderEmail,
         });
         if(existData){
-          res.status(400).send('You already sent a request to this partner!')
+         return res.status(400).send('You already sent a request to this partner!')
         }
-        const result = requests.insertOne(reqData)
+        const result = await requests.insertOne(reqData)
         res.send(result)
       } catch (error) {
         console.error(error);
