@@ -53,41 +53,56 @@ async function run() {
       }
     });
 
+    // get One Partner
 
-    // get One Partner 
+    app.get("/partnerDetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await partners.findOne(query);
+      console.log(result);
+      res.send(result);
+    });
 
-    app.get('/partnerDetails/:id', async(req, res)=>{
-            const id = req.params.id
-            const query = { _id: new ObjectId(id)}
-            const result = await partners.findOne(query)
-            console.log(result)
-            res.send(result)
-    })
-
-    // Create a partner POST API 
-    app.post('/allpartners', async(req, res)=>{
-        const data =req.body
-        const result = await partners.insertOne(data)
-        res.send(result)
-    })
+    // Create a partner POST API
+    app.post("/allpartners", async (req, res) => {
+      const data = req.body;
+      const result = await partners.insertOne(data);
+      res.send(result);
+    });
 
     // Create a PUT API for increment count Number
-    
-    app.put('/partnerRequest/:id', async(req,res)=>{
-      const {id} =req.params
-      const query = {_id: new ObjectId(id)}
-      const increment = { $inc: {partnerCount: 1}}
-      try{
-        const result = await partners.insertOne(query,increment)
-        res.send(result)
-      }catch(error){
-        console.error(error)
-        res.status(500).send(error.message)
+
+    app.put("/partnerRequest/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const increment = { $inc: { partnerCount: 1 } };
+      try {
+        const result = await partners.insertOne(query, increment);
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send(error.message);
       }
-    })
+    });
 
     // create API for Requst info Save
-  
+    app.post("/requests", async (req, res) => {
+      const reqData = req.body;
+      try {
+        const existData = await requests.findOne({
+          partnerId: reqData.partnerId,
+          senderEmail: reqData.senderEmail,
+        });
+        if(existData){
+          res.status(400).send('You already sent a request to this partner!')
+        }
+        const result = requests.insertOne(reqData)
+        res.send(result)
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ success: false, message: error.message });
+      }
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -99,11 +114,9 @@ async function run() {
 }
 run().catch(console.dir);
 
-
 app.get("/", (req, res) => {
   res.send("Server is running...");
 });
-
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
