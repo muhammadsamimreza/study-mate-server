@@ -26,6 +26,7 @@ async function run() {
 
     const db = client.db("study-Partners");
     const partners = db.collection("partnersCollection");
+    const requests = db.collection("requestsCollection");
 
     // all Partners get API
     app.get("/allpartners", async (req, res) => {
@@ -62,13 +63,31 @@ async function run() {
             console.log(result)
             res.send(result)
     })
-    // Create a partner API 
 
+    // Create a partner POST API 
     app.post('/allpartners', async(req, res)=>{
         const data =req.body
-        const result = partners.insertOne(data)
+        const result = await partners.insertOne(data)
         res.send(result)
     })
+
+    // Create a PUT API for increment count Number
+    
+    app.put('/partnerRequest/:id', async(req,res)=>{
+      const {id} =req.params
+      const query = {_id: new ObjectId(id)}
+      const increment = { $inc: {partnerCount: 1}}
+      try{
+        const result = await partners.insertOne(query,increment)
+        res.send(result)
+      }catch(error){
+        console.error(error)
+        res.status(500).send(error.message)
+      }
+    })
+
+    // create API for Requst info Save
+  
 
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -80,12 +99,12 @@ async function run() {
 }
 run().catch(console.dir);
 
-// Test route
+
 app.get("/", (req, res) => {
   res.send("Server is running...");
 });
 
-// Start server
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
