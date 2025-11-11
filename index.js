@@ -72,7 +72,7 @@ async function run() {
 
     // Create a PUT API for increment count Number
 
-    app.put("/requests/:id", async (req, res) => {
+    app.put("/partners/:id/increment", async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
       const increment = { $inc: { partnerCount: 1 } };
@@ -93,14 +93,27 @@ async function run() {
           partnerId: reqData.partnerId,
           senderEmail: reqData.senderEmail,
         });
-        if(existData){
-         return res.status(400).send('You already sent a request to this partner!')
+        if (existData) {
+          return res
+            .status(400)
+            .send("You already sent a request to this partner!");
         }
-        const result = await requests.insertOne(reqData)
-        res.send(result)
+        const result = await requests.insertOne(reqData);
+        res.send(result);
       } catch (error) {
         console.error(error);
         res.status(500).send({ success: false, message: error.message });
+      }
+    });
+
+    // Create API for Get saved request data (Get)
+    app.get("/requests", async (req, res) => {
+      const { senderEmail } = req.query;
+      try {
+        const result = await requests.find({ senderEmail }).toArray();
+        res.send(result);
+      } catch (err) {
+        res.status(500).send({ message: "Error fetching requests" });
       }
     });
 
