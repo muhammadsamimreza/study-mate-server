@@ -117,12 +117,22 @@ async function run() {
       }
     });
 
-    // Delete API 
+    // Delete API
     app.delete("/requests/:id", async (req, res) => {
       const { id } = req.params;
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
       try {
+        const request = await requests.findOne(query);
+        if (!request) {
+          return res.status(404).send({ message: "Request not found" });
+        }
         const result = await requests.deleteOne(query);
+        if (request.partnerId) {
+          await partners.updateOne(
+            { _id: new ObjectId(request.partnerId) },
+            { $inc: { partnerCount: -1 } }
+          );
+        }
         res.send(result);
       } catch (err) {
         res.status(500).send({ message: "Error deleting request" });
@@ -130,19 +140,18 @@ async function run() {
     });
 
     // Create API for Updated data
-    app.put('/requests/:id', async(req,res)=>{
-      const {id} = req.params
-      const updatedData = req.body
-      const query = {_id: new ObjectId(id)}
-      const set = { $set: updatedData}
-      try{
-        const result = await requests.updateOne(query, set)
-        res.send(result)
-      }catch (err) {
+    app.put("/requests/:id", async (req, res) => {
+      const { id } = req.params;
+      const updatedData = req.body;
+      const query = { _id: new ObjectId(id) };
+      const set = { $set: updatedData };
+      try {
+        const result = await requests.updateOne(query, set);
+        res.send(result);
+      } catch (err) {
         res.status(500).send({ message: "Error deleting request" });
       }
-    })
-
+    });
 
     // await client.db("admin").command({ ping: 1 });
     console.log(
